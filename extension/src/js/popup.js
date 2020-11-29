@@ -1,33 +1,21 @@
 (function () {
     $(document).ready(function () {
+        const dictionaryKey = 'google_translate_dict';
+        const storage = new ChromeStorage();
         const $copyBtn = $('#copy-btn');
         const $reloadBtn = $('#reload-btn');
         const $deleteBtn = $('#delete-btn');
         const $textarea = $('#words');
 
-        async function getStorageValue(key) {
-            return new Promise(resolve => {
-                chrome.storage.local.get(key, data => {
-                    resolve(data[key]);
-                });
-            });
-        }
-
-        function setStorageValue(key, value) {
-            let obj = {};
-            obj[key] = value;
-            chrome.storage.local.set(obj);
-        }
-
-        function getDictionaryKey() {
-            return 'google_translate_dict';
-        }
-
         async function getDictionary() {
             const _default = JSON.stringify([]);
-            let storageValue = await getStorageValue(getDictionaryKey());
+            let storageValue = await storage.get(dictionaryKey);
             let json = storageValue || _default;
             return JSON.parse(json);
+        }
+
+        function clearDictionary() {
+            storage.set(dictionaryKey, JSON.stringify([]));
         }
         
         async function insertDictionaryToTextArea() {
@@ -50,7 +38,7 @@
                return;
             }
 
-            setStorageValue(getDictionaryKey(), JSON.stringify([]));
+            clearDictionary();
             insertDictionaryToTextArea();
         });
 
