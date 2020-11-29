@@ -1,8 +1,8 @@
-#translate-panel {
+#dictionary-control-panel {
     padding: 10px;
 }
 
-#translate-panel input {
+#dictionary-control-panel input {
     display: block;
     width: 75%;
     padding: .375rem .75rem;
@@ -18,7 +18,7 @@
     margin-bottom: 1rem;
 }
 
-#translate-panel button {
+#dictionary-control-panel button {
     display: inline-block;
     font-weight: 200;
     color: #fff;

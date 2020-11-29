@@ -2,37 +2,38 @@
 
     const googleTranslateShortForm = {
         init: function () {
-            this.$container = $('#tw-main');
-            this.$mainInputCheckboxContainer = this.initMainInputCheckbox();
-            this.$appPanel = this.initTranslatePanel();
+            this.mainTimerId = null;
+            this.secondaryTimerId = null;
+            this.storage = new ChromeStorage();
             this.render();
             return this;
         },
 
         render: function () {
             this.renderAppPanel();
-            this.renderMainInputCheckbox();
-            this.renderSecondaryInputCheckboxes();
+            this.renderMainInputCheckboxContainer();
+            this.renderSecondaryInputCheckboxContainers();
         },
 
-        renderMainInputCheckbox: function () {
+        renderMainInputCheckboxContainer: function () {
             const $container = this.getOutput().parent().parent();
-            this.getMainInputCheckboxContainer().appendTo($container);
+            const $element = this.initMainInputCheckboxContainer();
+            $element.appendTo($container);
             this.setMainInputTranslate();
         },
 
-        renderSecondaryInputCheckboxes: function () {
-            const $elements = this.getSecondaryInputCheckboxContainers();
-            $elements.remove();
-            setTimeout(function () {
+        renderSecondaryInputCheckboxContainers: function () {
+            const action = function () {
                 let that = this;
-                const $additionalTranslates = $('.tw-bilingual-entry');
+                let $elements = this.getSecondaryInputCheckboxContainers();
+                let $additionalTranslates = $('.tw-bilingual-entry');
+                $elements.remove();
                 $.each($additionalTranslates, function (index, element) {
                     let $element = $(element);
                     let word = $element.find('span:first')
                         .find('span:first')
                         .html();
-                    let $checkbox = that.initSecondaryInputCheckbox();
+                    let $checkbox = that.initSecondaryInputCheckboxContainer();
                     $checkbox.find('input[type="checkbox"]')
                         .attr('data-word', word)
                         .attr('checked', false);
@@ -40,17 +41,19 @@
                         .html(`(${word})`);
                     $checkbox.insertAfter($element);
                 });
-            }.bind(this), 300);
+            };
+
+            this.secondaryTimerId = this.setDelayedAction(this.secondaryTimerId, action, 800);
         },
 
         renderAppPanel: function () {
             const $container = $('#tw-container');
-            const $panel = this.getAppPanel();
+            const $panel = this.initControlPanel();
             $panel.insertAfter($container);
         },
 
         getContainer: function () {
-            return this.$container;
+            return $('#tw-main');
         },
 
         getInput: function () {
@@ -69,12 +72,8 @@
             return $('#tw-cst');
         },
 
-        getPanel: function () {
-            return $('#tw-plp');
-        },
-
-        getAppPanel: function () {
-            return this.$appPanel;
+        getControlPanel: function () {
+            return $('#dictionary-control-panel');
         },
 
         isExist: function () {
@@ -86,12 +85,12 @@
         },
 
         getTranslatedWordFromCheckbox: function ($element) {
-            return $element.data('word');
+            return $element.attr('data-word');
         },
 
-        initMainInputCheckbox: function () {
+        initMainInputCheckboxContainer: function () {
             return $(
-                '<div class="main-input-chbx-wrapper">' +
+                '<div id="main-input-chbx-wrapper" class="main-input-chbx-wrapper">' +
                     '<label for="main-input-chbx">' +
                         '<input id="main-input-chbx" data-word="" type="checkbox">' +
                         '<span>Добавить в словарь <span class="main-word-translate"></span></span>' +
@@ -100,7 +99,7 @@
             );
         },
 
-        initSecondaryInputCheckbox: function () {
+        initSecondaryInputCheckboxContainer: function () {
             return $(
                 '<div class="secondary-input-chbx-wrapper">' +
                     '<label>' +
@@ -111,9 +110,9 @@
             );
         },
 
-        initTranslatePanel: function () {
+        initControlPanel: function () {
             return $(
-                '<div id="translate-panel">'+
+                '<div id="dictionary-control-panel">'+
                     '<input id="custom-translate" type="text" placeholder="Собственный перевод" value="">'+
                     '<button class="tp-save-btn" type="button">Сохранить</button>' +
                     '<button class="tp-reload-btn" type="button">Перезагрузить</button>' +
@@ -122,7 +121,7 @@
         },
 
         getMainInputCheckboxContainer: function () {
-            return this.$mainInputCheckboxContainer;
+            return $('#main-input-chbx-wrapper');
         },
 
         getSecondaryInputCheckboxContainers: function () {
@@ -139,14 +138,15 @@
         },
 
         getMainInputCheckbox: function () {
-            return this.getMainInputCheckboxContainer()
-                .find('input[type="checkbox"]');
+            return $('#main-input-chbx');
         },
 
         getTranslatedWord: function () {
             return this.getOutput()
                 .find('span')
-                .html();
+                .html()
+                .toString()
+                .toLowerCase();
         },
 
         getInputWord: function () {
@@ -157,13 +157,17 @@
         },
 
         getCustomTranslate: function () {
-            return ($('#custom-translate').val() || '')
+            return $('#custom-translate');
+        },
+
+        getCustomTranslateValue: function () {
+            return (this.getCustomTranslate().val() || '')
                 .trim()
                 .toLowerCase();
         },
 
         setMainInputTranslate: function () {
-            setTimeout(function () {
+            const action = function () {
                 const input = this.getInputWord();
                 const isInputExist = input.length;
                 const word = (isInputExist) ? this.getTranslatedWord() : '';
@@ -175,30 +179,44 @@
                     .attr('data-word', word);
                 this.getMainInputCheckbox()
                     .prop('checked', isInputExist);
-            }.bind(this), 300);
+            };
+
+            this.mainTimerId = this.setDelayedAction(this.mainTimerId, action, 800);
+        },
+
+        setDelayedAction: function(timer, func, delay, args = []) {
+            clearTimeout(timer);
+            // Для сохранения контектста this
+            let action = func.bind(this);
+            return setTimeout(action, delay, ...args);
+        },
+
+        clearForm: function() {
+            this.getDeleteBtn().click();
+            this.getCustomTranslate().val('');
         },
 
         bindEvents: function () {
-            const $panel = this.getAppPanel();
+            const $panel = this.getControlPanel();
             const $reloadBtn = $panel.find('.tp-reload-btn');
             const $saveBtn = $panel.find('.tp-save-btn');
 
             // Изменение слова для перевода
-            this.getInput().on('change keyup valueSet', () => {
+            this.getInput().on('keyup keypress blur change valueSet', () => {
                 this.setMainInputTranslate();
-                this.renderSecondaryInputCheckboxes();
+                this.renderSecondaryInputCheckboxContainers();
             });
 
             // Свап языка
             this.getSwitchLang().on('click', () => {
                 this.setMainInputTranslate();
-                this.renderSecondaryInputCheckboxes();
+                this.renderSecondaryInputCheckboxContainers();
             });
 
             // Удаление слова для перевода
             this.getDeleteBtn().on('click', () => {
                 this.setMainInputTranslate();
-                this.renderSecondaryInputCheckboxes();
+                this.renderSecondaryInputCheckboxContainers();
             });
 
             // Перезагрузка словаря
@@ -209,28 +227,27 @@
             // Сохранение словаря
             $saveBtn.on('click', () => {
                 this.saveTranslate();
+
             });
         },
 
         getTranslateAsString: function () {
             let result = '';
-            const input = this.getInputWord();
-            const customTranslate = this.getCustomTranslate();
-            const checkboxes = {
-                main: this.getMainInputCheckbox(),
-                secondary: this.getSecondaryInputCheckboxes(),
-            };
-            const translateCheckboxes = [checkboxes.main].concat(...checkboxes.secondary);
+            let input = this.getInputWord();
+            let customTranslate = this.getCustomTranslateValue();
+            let mainCheckbox = this.getMainInputCheckbox();
+            let secondaryCheckboxes = this.getSecondaryInputCheckboxes();
+            let translateCheckboxes = [mainCheckbox].concat(...secondaryCheckboxes);
             let translates = translateCheckboxes
                 .filter(checkbox => this.isActiveCheckbox(checkbox))
                 .map(checkbox => this.getTranslatedWordFromCheckbox(checkbox));
 
-            if (!input.length || !translates.length) {
-                return result;
-            }
-
             if (customTranslate.length) {
                 translates.push(customTranslate);
+            }
+
+            if (!input.length || !translates.length) {
+                return result;
             }
 
             result = `${input} - ${translates.join(';')}`;
@@ -239,12 +256,9 @@
         
         saveTranslate: async function () {
             const translate = this.getTranslateAsString();
+
             if (!translate.length) {
                 alert("Не выбраны переводы для сохранения");
-                return;
-            }
-
-            if (!confirm(`Сохранить перевод: ${translate}?`)) {
                 return;
             }
 
@@ -256,7 +270,7 @@
 
             dictionary.push(translate);
             this.saveDictionary(dictionary);
-            alert("Перевод добавлен!");
+            this.clearForm();
         },
 
         getDictionaryKey: function () {
@@ -264,30 +278,15 @@
         },
 
         getDictionary: async function () {
-            const key = this.getDictionaryKey();
             const _default = JSON.stringify([]);
-            let storageValue = await this.getStorageValue(key);
+            let storageValue = await this.storage.get(this.getDictionaryKey());
             let json = storageValue || _default;
             return JSON.parse(json);
         },
 
         saveDictionary: function (dictionary) {
-            this.setStorageValue(this.getDictionaryKey(), JSON.stringify(dictionary));
+            this.storage.set(this.getDictionaryKey(), JSON.stringify(dictionary));
         },
-
-        getStorageValue: async function (key) {
-            return new Promise(resolve => {
-                chrome.storage.local.get(key, data => {
-                    resolve(data[key]);
-                });
-            });
-        },
-
-        setStorageValue: function (key, value) {
-            let obj = {};
-            obj[key] = value;
-            chrome.storage.local.set(obj);
-        }
     };
 
     const app = {
