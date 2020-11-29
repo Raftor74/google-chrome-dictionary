@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CSS -->
+    <link rel="stylesheet" href="src/css/bootstrap.min.css">
+    <link rel="stylesheet" href="src/css/popup.css">
+    <!-- JS -->
+    <script src="src/js/jquery-3.5.1.min.js"></script>
+    <script src="src/js/bootstrap.min.js"></script>
+    <script src="src/js/popup.js"></script>
+    <title>Google Translate Dictionary</title>
+</head>
+<body>
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="dictionary-form">
+                <div class="form-group">
+                    <label for="words">Словарь</label>
+                    <textarea id="words" class="form-control" rows="5" readonly></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="reload-btn" type="button" class="btn btn-info">Обновить</button>
+                    <button id="copy-btn" type="button" class="btn btn-info">Копировать</button>
+                    <button id="delete-btn" type="button" class="btn btn-danger">Очистить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

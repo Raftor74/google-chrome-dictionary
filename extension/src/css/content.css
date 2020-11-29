@@ -1,0 +1,61 @@
+#translate-panel {
+    padding: 10px;
+}
+
+#translate-panel input {
+    display: block;
+    width: 75%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 200;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+}
+
+#translate-panel button {
+    display: inline-block;
+    font-weight: 200;
+    color: #fff;
+    background-color: #007bff;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid #007bff;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    margin-right: 1rem;
+    cursor: pointer;
+}
+
+.main-input-chbx-wrapper {
+    margin-top: 5px;
+}
+
+.main-input-chbx-wrapper label {
+    margin-left: -2px;
+    cursor: pointer;
+}
+
+.main-input-chbx-wrapper span {
+    font-size: 14px;
+}
+
+.secondary-input-chbx-wrapper label {
+    margin-left: -2px;
+    cursor: pointer;
+}
+
+.secondary-input-chbx-wrapper span {
+    font-size: 14px;
+}

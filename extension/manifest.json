@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Google Translate Dictionary",
+  "version": "1.0.0",
+  "icons": {
+    "64": "src/img/icon.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/*"
+      ],
+      "js": [
+        "src/js/jquery-3.5.1.min.js",
+        "src/js/content.js"
+      ],
+      "css": [
+        "src/css/content.css"
+      ]
+    }
+  ],
+  "browser_action": {
+    "default_icon": "src/img/icon.png",
+    "default_popup": "popup.html"
+  }
+}

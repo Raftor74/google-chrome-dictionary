@@ -1,0 +1,11 @@
+body {
+    padding: 20px;
+    width: 400px;
+    max-height: 100%;
+    font-family: Helvetica, Ubuntu, Arial, sans-serif;
+}
+
+.dictionary-form textarea {
+    resize: none;
+    overflow: auto;
+}
