@@ -1,47 +1,55 @@
 (function () {
-    $(document).ready(function () {
-        const dictionaryKey = 'google_translate_dict';
-        const storage = new ChromeStorage();
-        const $copyBtn = $('#copy-btn');
-        const $reloadBtn = $('#reload-btn');
-        const $deleteBtn = $('#delete-btn');
-        const $textarea = $('#words');
 
-        async function getDictionary() {
-            const _default = JSON.stringify([]);
-            let storageValue = await storage.get(dictionaryKey);
-            let json = storageValue || _default;
-            return JSON.parse(json);
-        }
+    const popup = {
+        init: function () {
+            this.dictionary = new TranslateDictionary();
+            this.$copyBtn = $('#copy-btn');
+            this.$reloadBtn = $('#reload-btn');
+            this.$deleteBtn = $('#delete-btn');
+            this.$textarea = $('#words');
+            this.bindEvents();
+        },
 
-        function clearDictionary() {
-            storage.set(dictionaryKey, JSON.stringify([]));
-        }
-        
-        async function insertDictionaryToTextArea() {
-            let dictionary = await getDictionary();
-            $textarea.val(dictionary.join('\r\n'));
-        }
+        bindEvents: function () {
+            this.$reloadBtn.on('click', () => {
+                this.insertDictionaryToTextArea();
+            });
 
-        $reloadBtn.on('click', function () {
-            insertDictionaryToTextArea();
-        });
+            this.$copyBtn.on('click', () => {
+                this.copyTextAreaTextToBuffer();
+            });
 
-        $copyBtn.on('click', function () {
-            $textarea.select();
+            this.$deleteBtn.on('click', () => {
+                if (!confirm("Очистить словарь?")) {
+                    return;
+                }
+
+                this.eraseDictionary();
+                this.insertDictionaryToTextArea();
+            });
+        },
+
+        getDictionary: async function () {
+            return await this.dictionary.get();
+        },
+
+        eraseDictionary: function () {
+            this.dictionary.erase();
+        },
+
+        insertDictionaryToTextArea: async function () {
+            let dictionary = await this.getDictionary();
+            this.$textarea.val(dictionary.join('\r\n'));
+        },
+
+        copyTextAreaTextToBuffer: function () {
+            this.$textarea.select();
             document.execCommand("copy");
-            alert('Текст скопирован в буффер обмена');
-        });
+        }
+    };
 
-        $deleteBtn.on('click', function () {
-            if (!confirm("Очистить словарь?")) {
-               return;
-            }
-
-            clearDictionary();
-            insertDictionaryToTextArea();
-        });
-
-        insertDictionaryToTextArea();
+    $(document).ready(function () {
+        popup.init();
+        popup.insertDictionaryToTextArea();
     });
 })();

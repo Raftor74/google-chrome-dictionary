@@ -4,7 +4,7 @@
         init: function () {
             this.mainTimerId = null;
             this.secondaryTimerId = null;
-            this.storage = new ChromeStorage();
+            this.dictionary = new TranslateDictionary();
             this.render();
             return this;
         },
@@ -262,31 +262,16 @@
                 return;
             }
 
-            let dictionary = await this.getDictionary();
+            let dictionary = await this.dictionary.get();
 
             if (!Array.isArray(dictionary)) {
                 dictionary = [];
             }
 
             dictionary.push(translate);
-            this.saveDictionary(dictionary);
+            this.dictionary.set(dictionary);
             this.clearForm();
-        },
-
-        getDictionaryKey: function () {
-            return 'google_translate_dict';
-        },
-
-        getDictionary: async function () {
-            const _default = JSON.stringify([]);
-            let storageValue = await this.storage.get(this.getDictionaryKey());
-            let json = storageValue || _default;
-            return JSON.parse(json);
-        },
-
-        saveDictionary: function (dictionary) {
-            this.storage.set(this.getDictionaryKey(), JSON.stringify(dictionary));
-        },
+        }
     };
 
     const app = {
